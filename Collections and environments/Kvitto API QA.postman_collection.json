@@ -1,0 +1,207 @@
+{
+  "info": {
+    "_postman_id": "93b0700e-f8fd-4dae-88a7-bd23f59096e3",
+    "name": "Kvitto API QA",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "38654207"
+  },
+  "item": [
+    {
+      "name": "Создание платежа: валидные данные + промокод",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.test(\"Промокод успешно применяется\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.amount).to.eql(17910);\r\n});\r\n\r\npm.test(\"Основные поля платежа корректны\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.status).to.eql(\"pending\");\r\n    pm.expect(jsonData.tariff_id).to.eql(\"standard\");\r\n    pm.expect(jsonData.amount).to.eql(17910);\r\n    pm.expect(jsonData.currency).to.eql(\"RUB\");\r\n    pm.expect(jsonData.method).to.eql(\"card\");\r\n    pm.expect(jsonData.email).to.eql(\"ivan.ivanov@ex.com\");\r\n    pm.expect(jsonData.created_at).to.be.a(\"string\").and.not.empty;\r\n});\r\n\r\n// сохранение id платежа\r\npm.environment.set(\"payment_id\", pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"tariff_id\": \"standard\",\r\n    \"name\": \"Иван Иванов\",\r\n    \"email\": \"ivan.ivanov@ex.com\",\r\n    \"phone\": \"+7 999 123-45-67\",\r\n    \"method\": \"card\",\r\n    \"promo_code\": \"KVITTO10\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{kvitto_url}}/payments",
+          "host": [
+            "{{kvitto_url}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение списка тарифов",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Тело - массив тарифов\", function () { \r\n    pm.expect(pm.response.json()).to.be.an(\"array\")\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{kvitto_url}}/tariffs",
+          "host": [
+            "{{kvitto_url}}"
+          ],
+          "path": [
+            "tariffs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение платежа по сохраненному ранее id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Данные соответствуют созданному платежу\", function () {\r\n    var environmentId = pm.environment.get(\"payment_id\");\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.id).to.eql(environmentId);\r\n    pm.expect(jsonData.status).to.eql(\"pending\");\r\n    pm.expect(jsonData.tariff_id).to.eql(\"standard\");\r\n    pm.expect(jsonData.amount).to.eql(17910); // Так как был применено промокод\r\n    pm.expect(jsonData.currency).to.eql(\"RUB\");\r\n    pm.expect(jsonData.method).to.eql(\"card\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{kvitto_url}}/payments/{{payment_id}}",
+          "host": [
+            "{{kvitto_url}}"
+          ],
+          "path": [
+            "payments",
+            "{{payment_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание платежа: некорректный email",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 422\", function () {\r\n    pm.response.to.have.status(422);\r\n});\r\n\r\npm.test(\"Присутствует сообщение об ошибке\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.error).to.eql(\"validation_error\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"tariff_id\": \"standard\",\r\n    \"name\": \"Иван Иванов\",\r\n    \"email\": \"invalid\",\r\n    \"phone\": \"+7 999 123-45-67\",\r\n    \"method\": \"card\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{kvitto_url}}/payments",
+          "host": [
+            "{{kvitto_url}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получить несуществующий платёж",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n\r\npm.test(\"Ответ содержит ошибку о несуществующем платеже\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.error).to.eql(\"not_found\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{kvitto_url}}/payments/nonexID",
+          "host": [
+            "{{kvitto_url}}"
+          ],
+          "path": [
+            "payments",
+            "nonexID"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание платежа с альтернативным email для чека",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.test(\"Тариф, способ оплаты и сумма корректны\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.tariff_id).to.eql(\"basic\");\r\n    pm.expect(jsonData.method).to.eql(\"sbp\");\r\n    pm.expect(jsonData.amount).to.eql(9900);\r\n});\r\n\r\npm.test(\"резервный email для чека сохранён\", function () {\r\n    var jsonData = pm.response.json();\r\n    pm.expect(jsonData.receipt_email).to.eql(\"receipt@ex.com\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"tariff_id\": \"basic\",\r\n    \"name\": \"Иван Иванов\",\r\n    \"email\": \"ivan.ivanov@ex.com\",\r\n    \"phone\": \"+7 999 123-45-67\",\r\n    \"method\": \"sbp\",\r\n    \"receipt_email\": \"receipt@ex.com\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{kvitto_url}}/payments",
+          "host": [
+            "{{kvitto_url}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

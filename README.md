@@ -11,3 +11,9 @@
 [Коллекции и окружение Postman](https://github.com/horrently/Test-task-Kvitto/tree/main/Collections%20and%20environments) – API в Postman — коллекция с проверками.
 
 [Итог](https://github.com/horrently/Test-task-Kvitto/blob/main/Conclusion/conclusion.md) – итог.
+
+### Бонусы
+
+[Что можно узнать или подделать через API](https://github.com/horrently/Test-task-Kvitto/blob/main/Bonuses/SecurityAPI.md)
+
+[Мысли, каких тестов не хватает самому ТЗ](https://github.com/horrently/Test-task-Kvitto/blob/main/Bonuses/Missing.md)

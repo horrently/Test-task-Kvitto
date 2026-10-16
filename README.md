@@ -4,8 +4,9 @@
 
 Требуется протестировать демо-страницу оплаты, через которую покупатель онлайн-школы оплачивает курс с помощью Квитто, и её API
 
-Страница оплаты: https://kvitto-qa-demo.vercel.app
-API: https://kvitto-qa-demo.vercel.app/api
+**Страница оплаты:** https://kvitto-qa-demo.vercel.app
+
+**API:** https://kvitto-qa-demo.vercel.app/api
 
 ## Выполненные задания 
 
